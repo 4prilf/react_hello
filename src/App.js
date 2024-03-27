@@ -1,58 +1,50 @@
 import React from 'react';
 import './App.css';
-//setdata的浅合并
-class App extends React.Component{
+
+//PureComponent
+/*class App extends React.Component 改为 class App extends React.PureComponent
+//1.在state中首次加载state后，后续使用setstate有多次加载重复数据的现象，性能优化
+    this.setState({
+      a:2,
+      b:2,
+      c:{
+        ...this.state.c,//声明一遍数组元素，防止软合并丢失
+        c1:9
+      }
+    })
+//2.PureComponent在对象，数组修改中的判定问题
+对数组与对象purecompon是检查内存中地址有无改变进行判断
+所以打印一直是123没有添加的4,console正常更新PureComponent的更新机制是检查内存地址
+*/
+
+class App extends React.PureComponent{
   state ={//数据初始化，在index中引入，首次加载
     a:0,
     b:1,
     c:{
       c1:123,
       c2:321
-    }
+    },
+    arr: [1,2,3],
   }
-  addA = () => {//后续设置
+
+  pure  () {//后续设置
+    this.state.arr.push(4);
     this.setState({
       a:this.state.a+1,
       b:2,
       c:{
         c1:9
-      }
+      },
+      arr:this.state.arr
+      //arr:[...this.state.arr]//数组重新声明，新内存地址
     })
-    console.log(this.state)//首次c1:123因为setdata实际最后执行
-    //第二次执行后c2直接没了，因为数组的软合并
+    console.log(this.state)
   }
-  initC = () => {//后续设置
-    this.setState({
-      a:this.state.a+1,
-      b:2,
-      c:{
-        ...this.state.c,//声明一遍数组元素，防止软合并丢失
-        c1:9
-      }
-    })
-    console.log("initC",this.state)
-  }
-  initState = ()=>{
-    this.setState({
-      a:this.state.a+1,
-      b:2,
-      c:{
-        ...this.state.c,//声明一遍数组元素，防止软合并丢失
-        c1:9
-      }
-    },()=>{
-      console.log("initstate的setstate的第二个参数",this.state)//a=1
-    })
-    console.log("initstate的setstate下面",this.state)//a=0
-    //事实证明的确setstate就是在最后执行
-  }
-  //不要在render中调用setstate render->setstate->重新加载render
   render(){
     return <div className='App'>
-      {this.state.a}
-      <button onClick={this.addA}>a加1</button>
-      <button onClick={this.initC}>c2初始化</button>
-      <button onClick={this.initState}>setstate第二个参数获取state</button>
+      {this.state.arr}
+      <button onClick={this.pure.bind(this)}>PureComponent</button>
     </div>
   }
 }
